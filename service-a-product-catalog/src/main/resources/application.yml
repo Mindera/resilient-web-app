@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: service-a-product-catalog
+
+# Pricing service connection
+pricing-service:
+  base-url: http://localhost:8081
+
+# Actuator - expose resilience4j endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,retries,circuitbreakers,circuitbreakerevents,retryevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# ============================================================
+# WORKSHOP: Resilience4j configuration goes here!
+# Uncomment and configure as you progress through the phases.
+# ============================================================
+
+# resilience4j:
+#   retry:
+#     instances:
+#       pricingService:
+#         maxAttempts: 3
+#         waitDuration: 500ms
+#
+#   circuitbreaker:
+#     instances:
+#       pricingService:
+#         slidingWindowSize: 10
+#         failureRateThreshold: 50
+#         waitDurationInOpenState: 10s
+#         permittedNumberOfCallsInHalfOpenState: 3
+
+logging:
+  level:
+    com.workshop.catalog: INFO

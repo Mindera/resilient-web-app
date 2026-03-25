@@ -1,0 +1,26 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: service-b-pricing
+
+# Failure configuration (can be overridden via environment variables)
+failure:
+  default-mode: HEALTHY        # HEALTHY, SLOW, FAIL, RANDOM
+  slow-delay-ms: 10000         # Delay in milliseconds for SLOW mode
+  default-random-rate: 0       # Default random failure rate (0-100)
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.workshop.pricing: INFO
