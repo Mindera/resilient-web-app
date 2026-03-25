@@ -12,3 +12,4 @@ target/
 .project
 .classpath
 .DS_Store
+TUTOR_GUIDE*
