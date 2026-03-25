@@ -5,16 +5,39 @@ spring:
   application:
     name: service-a-product-catalog
 
+  # H2 Database (for distributed retry queue + ShedLock)
+  datasource:
+    url: jdbc:h2:mem:retrydb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+
 # Pricing service connection
 pricing-service:
   base-url: http://localhost:8081
+
+# Distributed retry configuration
+distributed-retry:
+  interval-ms: 30000  # Run every 30 seconds
 
 # Actuator - expose resilience4j endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,retries,circuitbreakers,circuitbreakerevents,retryevents
+        include: health,info,metrics,retries,circuitbreakers,circuitbreakerevents,retryevents,scheduledtasks
   endpoint:
     health:
       show-details: always

@@ -1,5 +1,6 @@
 package com.workshop.catalog.client;
 
+import com.workshop.catalog.retry.DistributedRetryService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
@@ -9,15 +10,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Client that calls Service B (Pricing Service) to get pricing information.
  *
- * Step 2 complete: Circuit breaker with fallback.
- * - On success: caches the price for future fallback use
- * - On failure (circuit open): returns cached price with priceStale=true,
- *   or a default "unavailable" response if no cache exists
+ * Solution: Full resilience stack:
+ * - Retry with exponential backoff + jitter + exception filtering
+ * - Circuit breaker with fallback (returns cached/default prices)
+ * - Distributed retry: enqueues failed requests to DB for background processing
  */
 @Component
 public class PricingClient {
@@ -25,12 +25,16 @@ public class PricingClient {
     private static final Logger log = LoggerFactory.getLogger(PricingClient.class);
 
     private final WebClient pricingWebClient;
+    private final Map<String, Map<String, Object>> priceCache;
+    private final DistributedRetryService distributedRetryService;
 
-    // Simple in-memory cache of last known good prices
-    private final Map<String, Map<String, Object>> priceCache = new ConcurrentHashMap<>();
-
-    public PricingClient(WebClient pricingWebClient) {
+    public PricingClient(
+            WebClient pricingWebClient,
+            Map<String, Map<String, Object>> priceCache,
+            DistributedRetryService distributedRetryService) {
         this.pricingWebClient = pricingWebClient;
+        this.priceCache = priceCache;
+        this.distributedRetryService = distributedRetryService;
     }
 
     /**
@@ -62,11 +66,17 @@ public class PricingClient {
     /**
      * Fallback method — called when the circuit breaker is open or all retries are exhausted.
      * Returns cached price (marked as stale) or a default "unavailable" response.
-     *
-     * IMPORTANT: The method signature must match getPrice() params + a Throwable at the end.
+     * Also enqueues the request for distributed retry via the database.
      */
     private Map<String, Object> getPriceFallback(String productId, Throwable t) {
         log.warn("Fallback triggered for product {}: {} - {}", productId, t.getClass().getSimpleName(), t.getMessage());
+
+        // Enqueue for distributed retry (background processing)
+        try {
+            distributedRetryService.enqueueRetry(productId);
+        } catch (Exception e) {
+            log.error("Failed to enqueue distributed retry for product {}: {}", productId, e.getMessage());
+        }
 
         // Try to return cached price
         Map<String, Object> cached = priceCache.get(productId);
