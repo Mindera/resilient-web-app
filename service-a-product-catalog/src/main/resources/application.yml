@@ -22,25 +22,13 @@ management:
     circuitbreakers:
       enabled: true
 
-# ============================================================
-# WORKSHOP: Resilience4j configuration goes here!
-# Uncomment and configure as you progress through the phases.
-# ============================================================
-
-# resilience4j:
-#   retry:
-#     instances:
-#       pricingService:
-#         maxAttempts: 3
-#         waitDuration: 500ms
-#
-#   circuitbreaker:
-#     instances:
-#       pricingService:
-#         slidingWindowSize: 10
-#         failureRateThreshold: 50
-#         waitDurationInOpenState: 10s
-#         permittedNumberOfCallsInHalfOpenState: 3
+# Resilience4j configuration
+resilience4j:
+  retry:
+    instances:
+      pricingService:
+        maxAttempts: 3
+        waitDuration: 500ms
 
 logging:
   level:
