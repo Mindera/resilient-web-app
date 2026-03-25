@@ -24,7 +24,18 @@ management:
 
 # Resilience4j configuration
 resilience4j:
+  circuitbreaker:
+    circuitBreakerAspectOrder: 1
+    instances:
+      pricingService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
   retry:
+    retryAspectOrder: 2
     instances:
       pricingService:
         maxAttempts: 3

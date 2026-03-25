@@ -1,5 +1,6 @@
 package com.workshop.catalog.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,8 @@ import java.util.Map;
 /**
  * Client that calls Service B (Pricing Service) to get pricing information.
  *
- * Step 1: Basic retry added — retries up to 3 times with a 500ms wait.
+ * Step 2: Circuit breaker added — opens after 50% failure rate in a window of 10 calls.
+ * No fallback yet — when the circuit is open, the caller gets an exception.
  */
 @Component
 public class PricingClient {
@@ -26,8 +28,10 @@ public class PricingClient {
 
     /**
      * Fetches pricing info for a given product ID from Service B.
-     * Retries up to 3 times on failure.
+     * Circuit breaker opens after 50% failure rate (no fallback yet).
+     * Retries up to 3 times with exponential backoff.
      */
+    @CircuitBreaker(name = "pricingService")
     @Retry(name = "pricingService")
     @SuppressWarnings("unchecked")
     public Map<String, Object> getPrice(String productId) {
