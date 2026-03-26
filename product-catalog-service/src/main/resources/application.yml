@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: service-a-product-catalog
+    name: product-catalog-service
 
   # H2 Database (for distributed retry queue + ShedLock)
   datasource:

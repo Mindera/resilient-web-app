@@ -1,9 +1,9 @@
 services:
 
-  service-b-pricing:
+  pricing-service:
     build:
-      context: ./service-b-pricing
-    container_name: service-b-pricing
+      context: ./pricing-service
+    container_name: pricing-service
     ports:
       - "8081:8081"
     environment:
@@ -19,16 +19,16 @@ services:
     networks:
       - workshop-net
 
-  service-a-product-catalog:
+  product-catalog-service:
     build:
-      context: ./service-a-product-catalog
-    container_name: service-a-product-catalog
+      context: ./product-catalog-service
+    container_name: product-catalog-service
     ports:
       - "8080:8080"
     environment:
-      PRICING_SERVICE_BASE_URL: http://service-b-pricing:8081
+      PRICING_SERVICE_BASE_URL: http://pricing-service:8081
     depends_on:
-      service-b-pricing:
+      pricing-service:
         condition: service_healthy
     networks:
       - workshop-net
