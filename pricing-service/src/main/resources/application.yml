@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: service-b-pricing
+    name: pricing-service
 
 # Failure configuration (can be overridden via environment variables)
 failure:
