@@ -37,11 +37,11 @@ A hands-on workshop where you'll learn to protect your microservices from cascad
 mvn clean package -DskipTests
 
 # Terminal 1: Start Service B (Pricing)
-cd service-b-pricing
+cd pricing-service
 mvn spring-boot:run
 
 # Terminal 2: Start Service A (Product Catalog)
-cd service-a-product-catalog
+cd product-catalog-service
 mvn spring-boot:run
 ```
 
@@ -105,7 +105,7 @@ You're on-call. The pricing service is having issues. Document what happens.
 5. Hit `/products` again. What do you see?
 6. **Bonus:** If using Docker, stop Service B entirely:
    ```bash
-   docker stop service-b-pricing
+   docker stop pricing-service
    ```
    What happens now? Is this different from the slow failure?
 
@@ -136,7 +136,7 @@ curl -X POST "http://localhost:8081/admin/random?rate=40"
 
 Now hit `GET /products` several times. You'll see failures. Fix it with a retry.
 
-**Where to add it:** `service-a-product-catalog/src/main/java/com/workshop/catalog/client/PricingClient.java`
+**Where to add it:** `product-catalog-service/src/main/java/com/workshop/catalog/client/PricingClient.java`
 
 **What to do:**
 1. Add the `@Retry` annotation to the `getPrice` method
@@ -155,7 +155,7 @@ public Map<String, Object> getPrice(String productId) {
 <details>
 <summary>Hint 2: The YAML config</summary>
 
-Add this to `service-a-product-catalog/src/main/resources/application.yml`:
+Add this to `product-catalog-service/src/main/resources/application.yml`:
 
 ```yaml
 resilience4j:

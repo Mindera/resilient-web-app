@@ -18,8 +18,8 @@
     <name>Workshop - Building Resilient Spring Boot Apps</name>
 
     <modules>
-        <module>service-a-product-catalog</module>
-        <module>service-b-pricing</module>
+        <module>product-catalog-service</module>
+        <module>pricing-service</module>
     </modules>
 
     <properties>
