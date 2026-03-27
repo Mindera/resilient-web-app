@@ -15,7 +15,8 @@ A hands-on workshop where you'll learn to protect your microservices from cascad
 └─────────────────────┘         └─────────────────────┘
 ```
 
-**Service A** serves a product catalog. For each product, it calls **Service B** to get the current price. Service B has an admin API that lets you simulate different failure scenarios.
+**Service A** serves a product catalog. For each product, it calls **Service B** to get the current price.
+Service B has an admin API that lets you simulate different failure scenarios.
 
 ---
 
@@ -185,7 +186,7 @@ curl http://localhost:8080/actuator/retries
 curl http://localhost:8080/actuator/retryevents
 ```
 
-**Stuck?** `git checkout step-1-retry-basic`
+**Stuck?** `git checkout step-1-retry`
 
 ---
 
@@ -273,7 +274,7 @@ resilience4j:
 
 </details>
 
-**Stuck?** `git checkout step-1-retry-complete`
+**Stuck?** `git checkout step-1-retry`
 
 ---
 
@@ -356,7 +357,7 @@ If your `@CircuitBreaker` annotation doesn't seem to work, check this: Spring AO
 
 The annotation must be on a method in a **different Spring bean** that is called from outside. That's why we put it on `PricingClient` (called by `ProductService`).
 
-**Stuck?** `git checkout step-2-circuitbreaker-basic`
+**Stuck?** `git checkout step-2-circuitbreaker`
 
 ---
 
@@ -443,7 +444,7 @@ private Map<String, Object> getPriceFallback(String productId, Throwable t) {
 
 </details>
 
-**Stuck?** `git checkout step-2-circuitbreaker-complete`
+**Stuck?** `git checkout step-2-circuitbreaker`
 
 ---
 
@@ -530,7 +531,7 @@ resilience4j:
 3. `curl -X POST http://localhost:8081/admin/fail` → circuit opens → fallback kicks in
 4. `curl -X POST http://localhost:8081/admin/healthy` → circuit goes half-open → closes again
 
-**Stuck?** `git checkout step-3-combined`
+**Stuck?** `git checkout step-2-circuitbreaker`
 
 ---
 
@@ -577,11 +578,8 @@ If you get stuck, checkout the solution branch for that phase:
 | Branch | Content |
 |--------|---------|
 | `main` | Starter code (no resilience) |
-| `step-1-retry-basic` | Basic retry |
-| `step-1-retry-complete` | Retry + exponential backoff + jitter + exception filtering |
-| `step-2-circuitbreaker-basic` | Circuit breaker (no fallback) |
-| `step-2-circuitbreaker-complete` | Circuit breaker + fallback with cache |
-| `step-3-combined` | Retry + circuit breaker combined |
+| `step-1-retry` | Retry with backoff, jitter, and exception filtering |
+| `step-2-circuitbreaker` | Circuit breaker with fallback and in-memory price cache |
 | `solution` | Everything + distributed retry with ShedLock |
 
 ---
