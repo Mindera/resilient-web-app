@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Resilient Spring Boot Apps — Workshop</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/black.min.css" id="theme">
+<style>
+.reveal { background: #1a1a2e; color: #fff; }
+.reveal h1 { color: #e94560; font-size: 2.2em; }
+.reveal h2 { color: #e94560; font-size: 1.8em; }
+.reveal h3 { color: #a8e6cf; font-size: 1.2em; }
+.reveal strong { color: #ffd700; }
+.reveal em { color: #a8e6cf; font-style: normal; }
+.reveal code { color: #ffd700; background: #16213e; padding: 2px 8px; border-radius: 4px; font-size: 0.85em; font-family: 'Fira Code', 'Courier New', monospace; }
+.reveal pre code { background: #16213e; padding: 15px; border-radius: 8px; color: #a8e6cf; font-size: 0.75em; line-height: 1.4; }
+.reveal pre { width: 100%; box-shadow: none; }
+.reveal table { font-size: 0.75em; border-collapse: collapse; width: 100%; }
+.reveal table th { background: #e94560; color: white; padding: 10px 15px; text-align: left; border: 1px solid #0f3460; }
+.reveal table td { padding: 8px 15px; border: 1px solid #0f3460; }
+.reveal table tr:nth-child(even) td { background: #16213e; }
+.reveal table tr:nth-child(odd) td { background: #1a1a2e; }
+.reveal ul { font-size: 0.85em; }
+.reveal li { margin: 8px 0; }
+.reveal .columns { display: flex; gap: 40px; align-items: start; }
+.reveal .columns > * { flex: 1; }
+.reveal .title-slide h1 { font-size: 3em; color: #e94560; margin-bottom: 0.3em; }
+.reveal .title-slide h3 { color: #a8e6cf; font-weight: normal; font-size: 1.4em; }
+.reveal .title-slide p { color: #888; font-size: 1em; margin-top: 2em; }
+.reveal .section-title h1 { font-size: 3em; color: #e94560; }
+.reveal .callout { background: #16213e; border-left: 4px solid #e94560; padding: 15px 20px; border-radius: 0 8px 8px 0; font-size: 0.9em; margin: 15px 0; }
+.reveal .two-col { display: flex; gap: 30px; align-items: start; }
+.reveal .two-col > * { flex: 1; font-size: 0.8em; }
+.reveal .box { background: #16213e; padding: 15px; border-radius: 8px; margin: 10px 0; }
+.reveal .box.success { border-left: 4px solid #a8e6cf; }
+.reveal .box.warning { border-left: 4px solid #ffd700; }
+.reveal .box.danger { border-left: 4px solid #e94560; }
+
+/* ========================================= */
+/* DIAGRAM STYLES */
+/* ========================================= */
+
+/* Architecture diagram: horizontal flow */
+.arch-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+  font-size: 0.85em;
+}
+.service-box {
+  background: linear-gradient(135deg, #16213e, #0f3460);
+  border: 2px solid #e94560;
+  border-radius: 12px;
+  padding: 15px 20px;
+  text-align: center;
+  min-width: 160px;
+  box-shadow: 0 4px 20px rgba(233, 69, 96, 0.2);
+}
+.service-box.primary {
+  border-color: #a8e6cf;
+  box-shadow: 0 4px 20px rgba(168, 230, 207, 0.2);
+}
+.service-box h4 {
+  color: #fff;
+  margin: 0 0 5px 0;
+  font-size: 1em;
+}
+.service-box p {
+  color: #888;
+  margin: 0;
+  font-size: 0.75em;
+}
+.service-box .port {
+  display: inline-block;
+  background: #e94560;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7em;
+  margin-top: 5px;
+}
+.service-box.primary .port { background: #a8e6cf; color: #1a1a2e; }
+.arrow {
+  color: #ffd700;
+  font-size: 1.5em;
+  flex-shrink: 0;
+}
+.arrow-down {
+  color: #ffd700;
+  font-size: 1.5em;
+  display: block;
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* Flow diagrams: vertical steps */
+.flow-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0;
+}
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 700px;
+}
+.flow-step .label {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: #fff;
+  font-size: 0.8em;
+  flex: 1;
+  text-align: center;
+}
+.flow-step .label.success { border-color: #a8e6cf; color: #a8e6cf; }
+.flow-step .label.fail { border-color: #e94560; color: #e94560; }
+.flow-step .label.warn { border-color: #ffd700; color: #ffd700; }
+.flow-step .label.primary { border-color: #a8e6cf; background: linear-gradient(135deg, #16213e, #0f3460); }
+.flow-step .arrow-down {
+  margin: 0;
+  font-size: 1.2em;
+  color: #555;
+}
+
+/* State machine diagrams */
+.state-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0;
+  font-size: 0.9em;
+}
+.state-box {
+  background: linear-gradient(135deg, #16213e, #0f3460);
+  border: 3px solid #555;
+  border-radius: 50%;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+}
+.state-box.closed { border-color: #a8e6cf; }
+.state-box.open { border-color: #e94560; }
+.state-box.half-open { border-color: #ffd700; }
+.state-box h4 {
+  color: #fff;
+  margin: 0;
+  font-size: 1em;
+}
+.state-box p {
+  color: #888;
+  margin: 5px 0 0 0;
+  font-size: 0.7em;
+}
+.state-box.closed h4 { color: #a8e6cf; }
+.state-box.open h4 { color: #e94560; }
+.state-box.half-open h4 { color: #ffd700; }
+.state-arrow {
+  color: #ffd700;
+  font-size: 1.3em;
+  flex-shrink: 0;
+}
+.state-label {
+  color: #888;
+  font-size: 0.65em;
+  text-align: center;
+  max-width: 80px;
+}
+
+/* Comparison diagrams */
+.compare-diagram {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 20px 0;
+}
+.compare-box {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid #0f3460;
+}
+.compare-box.bad { border-color: #e94560; }
+.compare-box.good { border-color: #a8e6cf; }
+.compare-box h4 {
+  margin: 0 0 10px 0;
+  font-size: 1em;
+}
+.compare-box.bad h4 { color: #e94560; }
+.compare-box.good h4 { color: #a8e6cf; }
+.compare-box ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.75em;
+}
+.compare-box li { margin: 5px 0; }
+
+/* Retry timeline */
+.retry-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #16213e;
+  border-radius: 12px;
+  padding: 20px 30px;
+  margin: 20px 0;
+  font-size: 0.8em;
+}
+.retry-timeline .attempt {
+  text-align: center;
+  padding: 10px 15px;
+  background: #0f3460;
+  border-radius: 8px;
+  min-width: 100px;
+}
+.retry-timeline .attempt h5 {
+  color: #ffd700;
+  margin: 0 0 5px 0;
+  font-size: 0.9em;
+}
+.retry-timeline .attempt p {
+  color: #888;
+  margin: 0;
+  font-size: 0.75em;
+}
+.retry-timeline .arrow-right {
+  color: #555;
+  font-size: 1.2em;
+}
+
+/* Full stack diagram */
+.stack-diagram {
+  background: #0f3460;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.stack-diagram .layer {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.8em;
+  border-left: 4px solid #555;
+}
+.stack-diagram .layer.open { border-color: #e94560; }
+.stack-diagram .layer.closed { border-color: #a8e6cf; }
+.stack-diagram .layer.retry { border-color: #ffd700; }
+.stack-diagram .layer.success { border-color: #a8e6cf; }
+.stack-diagram .layer h5 {
+  margin: 0;
+  color: #fff;
+  min-width: 150px;
+}
+.stack-diagram .layer p {
+  margin: 0;
+  color: #888;
+  font-size: 0.85em;
+}
+.stack-diagram .layer.open h5 { color: #e94560; }
+.stack-diagram .layer.closed h5 { color: #a8e6cf; }
+.stack-diagram .layer.retry h5 { color: #ffd700; }
+
+/* Side by side architecture */
+.side-arch {
+  display: flex;
+  gap: 40px;
+  margin: 20px 0;
+  font-size: 0.8em;
+}
+.side-arch .side {
+  flex: 1;
+  background: #16213e;
+  border-radius: 12px;
+  padding: 20px;
+}
+.side-arch .side h4 {
+  color: #e94560;
+  margin: 0 0 15px 0;
+  text-align: center;
+  font-size: 1.1em;
+}
+.side-arch .side.good h4 { color: #a8e6cf; }
+.side-arch .side ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9em;
+}
+.side-arch .side li { margin: 8px 0; }
+
+/* Distributed retry diagram */
+.dist-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin: 20px 0;
+  font-size: 0.8em;
+}
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 600px;
+}
+.dist-box {
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  padding: 10px 15px;
+  text-align: center;
+  flex: 1;
+}
+.dist-box.highlight { border-color: #e94560; background: linear-gradient(135deg, #16213e, #2a1a2e); }
+.dist-box.success { border-color: #a8e6cf; }
+.dist-box h5 { color: #fff; margin: 0 0 3px 0; font-size: 0.9em; }
+.dist-box p { color: #888; margin: 0; font-size: 0.75em; }
+.dist-arrow { color: #ffd700; font-size: 1.2em; }
+.dist-arrow.down { display: block; text-align: center; }
+
+/* ShedLock diagram */
+.shedlock-diagram {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+  font-size: 0.75em;
+}
+.shedlock-diagram .instance {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 15px 10px;
+  text-align: center;
+}
+.shedlock-diagram .instance h5 { color: #fff; margin: 0 0 5px 0; }
+.shedlock-diagram .instance .status {
+  font-size: 0.8em;
+  padding: 3px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+.shedlock-diagram .instance .status.run { background: #a8e6cf; color: #1a1a2e; }
+.shedlock-diagram .instance .status.skip { background: #555; color: #888; }
+
+/* Service B modes grid */
+.modes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+  font-size: 0.8em;
+}
+.modes-grid .mode {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid #555;
+}
+.modes-grid .mode.healthy { border-color: #a8e6cf; }
+.modes-grid .mode.slow { border-color: #ffd700; }
+.modes-grid .mode.fail { border-color: #e94560; }
+.modes-grid .mode.random { border-color: #9b59b6; }
+.modes-grid .mode h4 { margin: 0 0 5px 0; color: #fff; font-size: 1em; }
+.modes-grid .mode p { margin: 0; color: #888; font-size: 0.85em; }
+.modes-grid .mode.healthy h4 { color: #a8e6cf; }
+.modes-grid .mode.slow h4 { color: #ffd700; }
+.modes-grid .mode.fail h4 { color: #e94560; }
+.modes-grid .mode.random h4 { color: #9b59b6; }
+
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ -->
+<!-- TITLE SLIDE -->
+<!-- ============================================================ -->
+<section class="title-slide">
+<h1>Building Resilient<br>Spring Boot Apps</h1>
+<h3>with Resilience4j</h3>
+<p>Workshop — 2h 30min to 3h</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- AGENDA -->
+<!-- ============================================================ -->
+<section>
+<h2>Agenda</h2>
+<table>
+<tr><th>Time</th><th>Phase</th></tr>
+<tr><td>10 min</td><td>Introduction</td></tr>
+<tr><td>20 min</td><td><strong>Phase 1:</strong> The Chaos</td></tr>
+<tr><td>45 min</td><td><strong>Phase 2:</strong> The Retry</td></tr>
+<tr><td>55 min</td><td><strong>Phase 3:</strong> The Circuit Breaker</td></tr>
+<tr><td>20 min</td><td><strong>Wrap-up:</strong> Distributed Retry</td></tr>
+<tr><td>10 min</td><td>Q&amp;A</td></tr>
+</table>
+<div class="callout" style="margin-top:20px;">
+<strong>Format:</strong> Challenge-driven, hands-on. Work at your own pace.<br>
+Branches available if you get stuck.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- WHAT IS RESILIENCE -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>What is<br>Resilience?</h1>
+</section>
+
+<section>
+<h2>The Problem</h2>
+<div class="arch-diagram">
+  <div class="service-box">
+    <h4>User</h4>
+    <p>Browser / Client</p>
+  </div>
+  <span class="arrow">→</span>
+  <div class="service-box primary">
+    <h4>Service A</h4>
+    <p>Product Catalog</p>
+    <span class="port">port 8080</span>
+  </div>
+  <span class="arrow">→</span>
+  <div class="service-box">
+    <h4>Service B</h4>
+    <p>Pricing Service</p>
+    <span class="port">port 8081</span>
+  </div>
+</div>
+<div class="callout">
+<strong>One slow or failing service can take down your entire system.</strong>
+</div>
+</section>
+
+<section>
+<h2>Cascading Failure</h2>
+<div class="side-arch">
+  <div class="side">
+    <h4>❌ Without Resilience</h4>
+    <ul>
+      <li>Service B slows down</li>
+      <li>Service A threads wait...</li>
+      <li>Thread pool exhausted</li>
+      <li><strong style="color:#e94560">All requests blocked</strong></li>
+      <li><strong style="color:#e94560">Service A is DOWN</strong></li>
+    </ul>
+  </div>
+  <div class="side good">
+    <h4>✓ With Resilience</h4>
+    <ul>
+      <li>Service B slows down</li>
+      <li>Circuit breaker trips</li>
+      <li>Service A fails fast</li>
+      <li>Fallback: show cached data</li>
+      <li><strong style="color:#a8e6cf">Service A stays UP</strong></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Resilience Patterns We'll Learn</h2>
+<div class="compare-diagram">
+  <div class="compare-box good">
+    <h4>1. Retry</h4>
+    <ul>
+      <li>Try again when things go wrong</li>
+      <li>With backoff + jitter</li>
+      <li>Handles transient failures</li>
+    </ul>
+  </div>
+  <div class="compare-box good">
+    <h4>2. Circuit Breaker</h4>
+    <ul>
+      <li>Stop calling what's broken</li>
+      <li>Fail fast, use fallback</li>
+      <li>Handles sustained failures</li>
+    </ul>
+  </div>
+</div>
+<div class="compare-box good" style="margin-top:15px;">
+  <h4>3. Distributed Retry</h4>
+  <ul style="columns:2; column-gap:40px;">
+    <li>Retry even when you crash</li>
+    <li>Persistent queue + scheduled job + distributed lock</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>The<br>Architecture</h1>
+</section>
+
+<section>
+<h2>Our System</h2>
+<div class="arch-diagram">
+  <div class="service-box primary">
+    <h4>Product Catalog</h4>
+    <p>Service A</p>
+    <span class="port">port 8080</span>
+  </div>
+  <span class="arrow">→</span>
+  <div class="service-box">
+    <h4>Pricing Service</h4>
+    <p>Service B</p>
+    <span class="port">port 8081</span>
+  </div>
+</div>
+<div class="flow-diagram">
+  <div class="flow-step">
+    <div class="label primary">GET /products</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label primary">Enrich with prices from Service B</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label primary">Return product list with pricing</div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Service B: Failure Modes</h2>
+<div class="modes-grid">
+  <div class="mode healthy">
+    <h4>POST /admin/healthy</h4>
+    <p>Normal operation ✓</p>
+  </div>
+  <div class="mode slow">
+    <h4>POST /admin/slow</h4>
+    <p>10-second delay per request ⏱️</p>
+  </div>
+  <div class="mode fail">
+    <h4>POST /admin/fail</h4>
+    <p>500 Internal Server Error ❌</p>
+  </div>
+  <div class="mode random">
+    <h4>POST /admin/random?rate=40</h4>
+    <p>40% of requests fail randomly 🎲</p>
+  </div>
+</div>
+<div class="callout">
+These are your <strong>weapons</strong> for testing resilience patterns!
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PHASE 1 -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>Phase 1</h1>
+<h3 style="color:#a8e6cf; font-size:1.3em;">The Chaos</h3>
+</section>
+
+<section>
+<h2>Observe the Disaster</h2>
+<p><strong>No code changes. Just observe.</strong></p>
+<ol style="font-size:0.85em;">
+<li>Start both services (<code>mvn spring-boot:run</code>)</li>
+<li>Call <code>GET /products</code> — verify it works</li>
+<li>Toggle Service B to <strong style="color:#ffd700">slow mode</strong></li>
+<li>Call <code>GET /products</code> from multiple tabs</li>
+<li>Toggle Service B to <strong style="color:#e94560">error mode</strong></li>
+<li>Call <code>GET /products</code> again</li>
+<li class="highlight"><strong>Bonus:</strong> <code>docker stop pricing-service</code></li>
+</ol>
+</section>
+
+<section>
+<h2>What Did You Observe?</h2>
+<div class="side-arch">
+  <div class="side">
+    <h4>⏱️ Slow Mode</h4>
+    <ul>
+      <li>Service A <strong>hung</strong> for 10+ seconds</li>
+      <li>All threads blocked</li>
+      <li>Entire service became unresponsive</li>
+    </ul>
+  </div>
+  <div class="side">
+    <h4>❌ Error Mode</h4>
+    <ul>
+      <li>500 errors propagated to users</li>
+      <li>No graceful degradation</li>
+      <li>No fallback</li>
+    </ul>
+  </div>
+</div>
+<div class="callout" style="margin-top:15px;">
+<strong>Key insight:</strong> A <em>slow</em> service is <em>worse</em> than a dead service.<br>
+Dead = fails fast. Slow = holds your threads hostage.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PHASE 2 -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>Phase 2</h1>
+<h3 style="color:#a8e6cf; font-size:1.3em;">The Retry</h3>
+</section>
+
+<section>
+<h2>The Retry Pattern</h2>
+<div class="retry-timeline">
+  <div class="attempt">
+    <h5>Attempt 1</h5>
+    <p>Fail ❌</p>
+  </div>
+  <span class="arrow-right">→</span>
+  <div class="attempt">
+    <h5>Wait 500ms</h5>
+    <p>Backoff</p>
+  </div>
+  <span class="arrow-right">→</span>
+  <div class="attempt">
+    <h5>Attempt 2</h5>
+    <p>Fail ❌</p>
+  </div>
+  <span class="arrow-right">→</span>
+  <div class="attempt">
+    <h5>Wait 1s</h5>
+    <p>Double</p>
+  </div>
+  <span class="arrow-right">→</span>
+  <div class="attempt">
+    <h5>Attempt 3</h5>
+    <p>Success ✓</p>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Challenge 1: Add Basic Retry</h2>
+<ol style="font-size:0.8em;">
+<li>Toggle Service B: <code>curl -X POST "localhost:8081/admin/random?rate=40"</code></li>
+<li>Hit <code>GET /products</code> — you see failures</li>
+<li>Add <code>@Retry(name = "pricingService")</code> to <code>PricingClient.getPrice()</code></li>
+<li>Configure in <code>application.yml</code></li>
+</ol>
+<pre><code>@Retry(name = "pricingService")
+public Map&lt;String, Object&gt; getPrice(String productId) { ... }
+
+resilience4j:
+  retry:
+    instances:
+      pricingService:
+        maxAttempts: 3
+        waitDuration: 500ms</code></pre>
+</section>
+
+<section>
+<h2>Exponential Backoff</h2>
+<div class="compare-diagram">
+  <div class="compare-box bad">
+    <h4>❌ Without Backoff</h4>
+    <ul>
+      <li>All retries at 500ms</li>
+      <li>Creates load spikes</li>
+      <li>Can overload the failing service</li>
+    </ul>
+  </div>
+  <div class="compare-box good">
+    <h4>✓ With Backoff</h4>
+    <ul>
+      <li>500ms → 1s → 2s</li>
+      <li>Gives service breathing room</li>
+      <li>Better chance of recovery</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Jitter: Prevent Thundering Herd</h2>
+<div class="side-arch">
+  <div class="side">
+    <h4>❌ Without Jitter</h4>
+    <ul>
+      <li>10 clients all retry at same time</li>
+      <li>Spike at t=0.5s, t=1s, t=2s</li>
+      <li>All hit Service B simultaneously</li>
+      <li><strong style="color:#e94560">Even worse than before!</strong></li>
+    </ul>
+  </div>
+  <div class="side good">
+    <h4>✓ With Jitter</h4>
+    <ul>
+      <li>10 clients retry at random intervals</li>
+      <li>Requests spread out</li>
+      <li>No thundering herd</li>
+      <li><strong style="color:#a8e6cf">Smooth distribution</strong></li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Challenge 2: Fix the Retry Storm</h2>
+<p>Your retries are making things <strong style="color:#e94560">worse</strong>!</p>
+<ol style="font-size:0.8em;">
+<li>Service B in slow mode + 10 requests = <strong>30 calls</strong> to Service B!</li>
+<li>Add exponential backoff + jitter to the config</li>
+</ol>
+<pre><code>resilience4j:
+  retry:
+    instances:
+      pricingService:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        enableRandomizedWait: true
+        randomizedWaitFactor: 0.5</code></pre>
+<div class="callout">
+<strong>Bonus:</strong> Only retry on 5xx errors — NOT 400 Bad Request!
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PHASE 3 -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>Phase 3</h1>
+<h3 style="color:#a8e6cf; font-size:1.3em;">The Circuit Breaker</h3>
+</section>
+
+<section>
+<h2>The Circuit Breaker Pattern</h2>
+<div class="state-diagram">
+  <div class="state-box closed">
+    <h4>CLOSED</h4>
+    <p>Normal operation</p>
+  </div>
+  <div>
+    <span class="state-arrow">→</span>
+    <div class="state-label">failures &gt; 50%</div>
+  </div>
+  <div class="state-box open">
+    <h4>OPEN</h4>
+    <p>Failing fast</p>
+  </div>
+  <div>
+    <span class="state-arrow">→</span>
+    <div class="state-label">wait 10s</div>
+  </div>
+  <div class="state-box half-open">
+    <h4>HALF_OPEN</h4>
+    <p>Testing</p>
+  </div>
+  <div>
+    <span class="state-arrow">↻</span>
+    <div class="state-label">succeed? → CLOSED<br>fail? → OPEN</div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>CLOSED State (Normal)</h2>
+<div class="flow-diagram">
+  <div class="flow-step">
+    <div class="label primary">Request comes in</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label primary">Call Service B</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label warn">Count success/failure</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label warn">After 10 calls, if failures &gt; 50% → OPEN</div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>OPEN State (Failing Fast)</h2>
+<div class="flow-diagram">
+  <div class="flow-step">
+    <div class="label primary">Request comes in</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label fail">Circuit OPEN → Reject immediately</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label fail">Call fallback (no Service B call!)</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label warn">After 10s → HALF_OPEN</div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>HALF_OPEN State (Testing)</h2>
+<div class="flow-diagram">
+  <div class="flow-step">
+    <div class="label primary">3 test calls allowed through</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label warn">If ≥2 succeed (67%+) → CLOSED ✓</div>
+    <span class="arrow-down">↓</span>
+  </div>
+  <div class="flow-step">
+    <div class="label fail">If ≥2 fail → OPEN again ❌</div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Challenge 3: Add Circuit Breaker</h2>
+<ol style="font-size:0.8em;">
+<li>Toggle Service B: <code>curl -X POST localhost:8081/admin/fail</code></li>
+<li>Send requests repeatedly — watch the circuit open</li>
+<li>Check state: <code>GET /actuator/circuitbreakers</code></li>
+<li>Toggle back to healthy — watch it recover</li>
+</ol>
+<pre><code>@CircuitBreaker(name = "pricingService")
+public Map&lt;String, Object&gt; getPrice(String productId) { ... }
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      pricingService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s</code></pre>
+</section>
+
+<section>
+<h2>The Fallback</h2>
+<p>When the circuit opens, give users something <strong>useful</strong>, not an error.</p>
+<pre><code>@CircuitBreaker(name = "pricingService",
+                 fallbackMethod = "getPriceFallback")
+public Map&lt;String, Object&gt; getPrice(String productId) { ... }
+
+private Map&lt;String, Object&gt; getPriceFallback(
+        String productId, Throwable t) {
+    return Map.of(
+        "price", cachedPrice,
+        "priceStale", true,
+        "error", "Price temporarily unavailable"
+    );
+}</code></pre>
+<div class="callout">
+The fallback method signature must match: <strong>same params + Throwable</strong> as last param.
+</div>
+</section>
+
+<section>
+<h2>The #1 Workshop Pitfall</h2>
+<div class="callout" style="border-color:#e94560; background: linear-gradient(135deg, #1a1a2e, #2a1a2e);">
+<strong>⚠️ @CircuitBreaker doesn't work when you call the annotated method from within the same class!</strong>
+</div>
+<div class="side-arch">
+  <div class="side" style="border-color:#e94560;">
+    <h4>❌ WRONG</h4>
+    <pre style="font-size:0.7em; background:#0f3460; padding:10px; border-radius:8px; color:#e94560;"><code>@CircuitBreaker(name = "ps")
+public void myMethod() {
+    anotherMethod();  // internal call
+}
+
+public void anotherMethod() {
+    // AOP proxy NOT used!
+}</code></pre>
+  </div>
+  <div class="side good" style="border-color:#a8e6cf;">
+    <h4>✅ RIGHT</h4>
+    <pre style="font-size:0.7em; background:#0f3460; padding:10px; border-radius:8px; color:#a8e6cf;"><code>@Service
+public class ProductService {
+    @Autowired
+    private PricingClient client;
+
+    public void myMethod() {
+        client.getPrice(id);  // through proxy!
+    }
+}</code></pre>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Challenge 4: Combine Retry + Circuit Breaker</h2>
+<p>The <strong>order matters</strong>!</p>
+<div class="compare-diagram">
+  <div class="compare-box bad">
+    <h4>❌ Wrong Order</h4>
+    <ul>
+      <li><code>@Retry</code> outer, <code>@CircuitBreaker</code> inner</li>
+      <li>Circuit opens → retries still happen</li>
+      <li><strong style="color:#e94560">Wasted effort!</strong></li>
+    </ul>
+  </div>
+  <div class="compare-box good">
+    <h4>✅ Right Order</h4>
+    <ul>
+      <li><code>@CircuitBreaker</code> outer, <code>@Retry</code> inner</li>
+      <li>Circuit open → skip retry</li>
+      <li><strong style="color:#a8e6cf">Go straight to fallback</strong></li>
+    </ul>
+  </div>
+</div>
+<pre><code>resilience4j:
+  circuitbreaker:
+    circuitBreakerAspectOrder: 1   # outer
+  retry:
+    retryAspectOrder: 2             # inner</code></pre>
+</section>
+
+<!-- ============================================================ -->
+<!-- WRAP-UP -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>Wrap-up</h1>
+<h3 style="color:#a8e6cf; font-size:1.3em;">Distributed Retry</h3>
+</section>
+
+<section>
+<h2>The Problem with In-Memory Retry</h2>
+<div class="compare-diagram">
+  <div class="compare-box bad">
+    <h4>Everything dies with the process</h4>
+    <ul>
+      <li>Service A crashes → retries lost</li>
+      <li>5 instances → who retries what?</li>
+      <li>Failure lasts hours → give up too soon</li>
+    </ul>
+  </div>
+</div>
+<div class="callout">
+We need <strong>persistent retry</strong>.
+</div>
+</section>
+
+<section>
+<h2>The Distributed Retry Pattern</h2>
+<div class="dist-diagram">
+  <div class="dist-row">
+    <div class="dist-box">
+      <h5>User Request</h5>
+      <p>Call to Service B</p>
+    </div>
+    <span class="dist-arrow">→</span>
+    <div class="dist-box highlight">
+      <h5>Service B Fails</h5>
+      <p>Fallback triggered</p>
+    </div>
+    <span class="dist-arrow">→</span>
+    <div class="dist-box">
+      <h5>Save to DB</h5>
+      <p>retry_requests table</p>
+    </div>
+  </div>
+  <span class="dist-arrow down">↓</span>
+  <div class="dist-row">
+    <div class="dist-box">
+      <h5>Scheduled Job</h5>
+      <p>Every 30 seconds</p>
+    </div>
+    <span class="dist-arrow">→</span>
+    <div class="dist-box success">
+      <h5>ShedLock</h5>
+      <p>Only 1 instance runs</p>
+    </div>
+    <span class="dist-arrow">→</span>
+    <div class="dist-box success">
+      <h5>Retry from DB</h5>
+      <p>Call Service B</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>ShedLock: Distributed Locking</h2>
+<div class="shedlock-diagram">
+  <div class="instance">
+    <h5>Instance 1</h5>
+    <span class="status run">runs ✓</span>
+  </div>
+  <div class="instance">
+    <h5>Instance 2</h5>
+    <span class="status skip">skip</span>
+  </div>
+  <div class="instance">
+    <h5>Instance 3</h5>
+    <span class="status skip">skip</span>
+  </div>
+  <div class="instance">
+    <h5>Instance 4</h5>
+    <span class="status skip">skip</span>
+  </div>
+  <div class="instance">
+    <h5>Instance 5</h5>
+    <span class="status skip">skip</span>
+  </div>
+</div>
+<div class="compare-diagram" style="margin-top:10px;">
+  <div class="compare-box bad">
+    <h4>❌ Without ShedLock</h4>
+    <ul><li>5 instances run scheduler → 5x retries!</li></ul>
+  </div>
+  <div class="compare-box good">
+    <h4>✓ With ShedLock</h4>
+    <ul><li>1 instance runs → exactly 1 retry</li></ul>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- KEY TAKEAWAYS -->
+<!-- ============================================================ -->
+<section class="section-title">
+<h1>Key<br>Takeaways</h1>
+</section>
+
+<section>
+<h2>The Full Resilience Stack</h2>
+<div class="stack-diagram">
+  <div class="layer open">
+    <h5>Circuit Breaker</h5>
+    <p>OPEN? → Fallback → Cached/Stale price</p>
+  </div>
+  <div class="layer closed">
+    <h5>CLOSED → Retry</h5>
+    <p>Fail? → retry with backoff + jitter</p>
+  </div>
+  <div class="layer success">
+    <h5>Success</h5>
+    <p>Cache price → Return response</p>
+  </div>
+  <div class="layer open">
+    <h5>Fallback fired</h5>
+    <p>Save to DB → Background retry via ShedLock</p>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>When to Use What</h2>
+<table>
+<tr><th>Pattern</th><th>Use when</th></tr>
+<tr><td><strong>Retry</strong></td><td>Failures are transient (network blips, brief overloads)</td></tr>
+<tr><td><strong>Circuit Breaker</strong></td><td>Failures are sustained (service is down)</td></tr>
+<tr><td><strong>Fallback</strong></td><td>You want graceful degradation for users</td></tr>
+<tr><td><strong>Distributed Retry</strong></td><td>Operations must survive app restarts</td></tr>
+<tr><td><strong>Bulkhead</strong></td><td>You want to isolate failures between services</td></tr>
+<tr><td><strong>Rate Limiter</strong></td><td>You need to respect downstream rate limits</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Real-World Stories</h2>
+<div class="compare-diagram">
+  <div class="compare-box good">
+    <h4>Netflix</h4>
+    <ul>
+      <li>Built Hystrix after cascading failures</li>
+      <li>Created Chaos Monkey to test resilience</li>
+      <li>Pioneered many resilience patterns</li>
+    </ul>
+  </div>
+  <div class="compare-box good">
+    <h4>Amazon</h4>
+    <ul>
+      <li>Every 100ms latency = 1% sales lost</li>
+      <li>10 services in chain = 10x user latency</li>
+      <li>Resilience = money</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- RESOURCES -->
+<!-- ============================================================ -->
+<section>
+<h2>Resources</h2>
+<table>
+<tr><th>Resource</th><th>URL</th></tr>
+<tr><td>Resilience4j Docs</td><td><code>resilience4j.readme.io</code></td></tr>
+<tr><td>Spring Cloud Circuit Breaker</td><td><code>spring.io/projects/spring-cloud-circuitbreaker</code></td></tr>
+<tr><td>Martin Fowler: Circuit Breaker</td><td><code>martinfowler.com/bliki/CircuitBreaker.html</code></td></tr>
+<tr><td>Microsoft: Retry Pattern</td><td><code>learn.microsoft.com/azure/architecture/patterns/retry</code></td></tr>
+<tr><td>ShedLock</td><td><code>github.com/lukas-krecan/ShedLock</code></td></tr>
+</table>
+</section>
+
+<section>
+<h2>Workshop Branches</h2>
+<table>
+<tr><th>Branch</th><th>Content</th></tr>
+<tr><td><code>main</code></td><td>Starter code (no resilience)</td></tr>
+<tr><td><code>step-1-retry</code></td><td>Retry with backoff, jitter, exception filtering</td></tr>
+<tr><td><code>step-2-circuitbreaker</code></td><td>Circuit breaker with fallback + cache</td></tr>
+<tr><td><code>solution</code></td><td>Everything + distributed retry with ShedLock</td></tr>
+</table>
+<div class="callout" style="margin-top:20px;">
+Stuck? <code>git checkout step-1-retry</code> — then study the diff to understand the changes.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- CLOSING -->
+<!-- ============================================================ -->
+<section class="title-slide">
+<h1>Questions?</h1>
+<h3 style="color:#a8e6cf; font-size:1.3em; margin-top:1em;">Let's break some services!</h3>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  controls: true,
+  progress: true,
+  center: false,
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  backgroundTransition: 'fade',
+  width: 1280,
+  height: 720,
+  margin: 0.1,
+});
+</script>
+</body>
+</html>
